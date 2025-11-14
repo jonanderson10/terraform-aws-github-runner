@@ -167,6 +167,7 @@ build {
       "sudo systemctl restart amazon-cloudwatch-agent",
       "sudo curl -f https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip",
       "unzip awscliv2.zip",
+      "sleep 5", # Adding this to give time for dpkg lock to be released
       "sudo ./aws/install",
     ], var.custom_shell_commands)
   }
