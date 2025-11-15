@@ -49,4 +49,5 @@ $action = New-ScheduledTaskAction -WorkingDirectory "C:\actions-runner" -Execute
 $trigger = New-ScheduledTaskTrigger -AtStartup
 Register-ScheduledTask -TaskName "runnerinit" -Action $action -Trigger $trigger -User System -RunLevel Highest -Force
 
-& "C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeInstance.ps1" -Schedule
+Write-Host "Running EC2Launch v2 to signal instance ready..."
+& "$${env:ProgramFiles}\Amazon\EC2Launch\EC2Launch.exe" run
