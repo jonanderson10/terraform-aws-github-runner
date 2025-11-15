@@ -37,7 +37,44 @@ Write-Host "Creating actions-runner directory for the GH Action installation"
 New-Item -ItemType Directory -Path C:\actions-runner ; Set-Location C:\actions-runner
 
 Write-Host "Downloading the GH Action runner from ${action_runner_url}"
-Invoke-WebRequest -Uri ${action_runner_url} -OutFile actions-runner.zip
+# Retry logic for downloading the runner with increased timeout and retry attempts
+$maxRetries = 1
+$retryCount = 0
+$downloadSuccess = $false
+
+while ($retryCount -lt $maxRetries -and -not $downloadSuccess) {
+  try {
+    $retryCount++
+    Write-Host "Download attempt $retryCount of $maxRetries"
+        
+    # Use more robust download parameters
+    Invoke-WebRequest -Uri ${action_runner_url} -OutFile actions-runner.zip -TimeoutSec 300 -UserAgent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        
+    # Verify the file was downloaded and has content
+    if (Test-Path "actions-runner.zip" -and (Get-Item "actions-runner.zip").Length -gt 0) {
+      Write-Host "Download completed successfully"
+      $downloadSuccess = $true
+    }
+    else {
+      throw "Downloaded file is empty or missing"
+    }
+  }
+  catch {
+    Write-Host "Download attempt $retryCount failed: $($_.Exception.Message)"
+    if (Test-Path "actions-runner.zip") {
+      Remove-Item "actions-runner.zip" -Force
+    }
+    if ($retryCount -lt $maxRetries) {
+      Write-Host "Waiting 10 seconds before retry..."
+      Start-Sleep -Seconds 10
+    }
+  }
+}
+
+if (-not $downloadSuccess) {
+  Write-Error "Failed to download GitHub Actions runner after $maxRetries attempts"
+  exit 1
+}
 
 Write-Host "Un-zip action runner"
 Expand-Archive -Path actions-runner.zip -DestinationPath .
