@@ -153,6 +153,7 @@ build {
     ]
     inline = concat([
       "sudo cloud-init status --wait",
+      "sleep 5", # Adding this to give time for dpkg lock to be released
       "sudo apt-get update",
       "sudo apt-get -y install ca-certificates curl gnupg lsb-release",
       "sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
